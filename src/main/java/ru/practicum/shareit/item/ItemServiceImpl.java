@@ -1,33 +1,33 @@
 package ru.practicum.shareit.item;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserService;
+import ru.practicum.shareit.user.model.User;
 
 import java.util.*;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
     private final Map<Long, Item> itemStore = new HashMap<>();
     private Long idCounter = 1L;
     private final UserService userService;
-
-    public ItemServiceImpl(UserService userService) {
-        this.userService = userService;
-    }
+    private final ItemMapper itemMapper;
+    private final UserMapper userMapper;
 
     @Override
     public ItemDto createItem(Long userId, ItemDto itemDto) {
         log.info("Запрос на создание вещи от пользователя id={}: {}", userId, itemDto);
 
-        User owner = UserMapper.toUser(userService.getUser(userId));
+        User owner = userMapper.toUser(userService.getUser(userId));
         if (owner == null) {
             log.error("Пользователь с id={} не найден", userId);
             throw new NotFoundException("Пользователь не найден");
@@ -48,13 +48,13 @@ public class ItemServiceImpl implements ItemService {
             throw new ValidationException("Поле available обязательно");
         }
 
-        Item item = ItemMapper.toItem(itemDto);
+        Item item = itemMapper.toItem(itemDto);
         item.setId(idCounter++);
         item.setOwner(owner);
         itemStore.put(item.getId(), item);
 
         log.info("Вещь создана: {}", item);
-        return ItemMapper.toItemDto(item);
+        return itemMapper.toItemDto(item);
     }
 
     @Override
@@ -85,7 +85,7 @@ public class ItemServiceImpl implements ItemService {
         }
 
         log.info("Вещь id={} обновлена: {}", itemId, existing);
-        return ItemMapper.toItemDto(existing);
+        return itemMapper.toItemDto(existing);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class ItemServiceImpl implements ItemService {
         }
 
         log.info("Вещь найдена: {}", item);
-        return ItemMapper.toItemDto(item);
+        return itemMapper.toItemDto(item);
     }
 
     @Override
@@ -109,7 +109,7 @@ public class ItemServiceImpl implements ItemService {
         List<ItemDto> result = new ArrayList<>();
         for (Item item : itemStore.values()) {
             if (item.getOwner().getId().equals(userId)) {
-                result.add(ItemMapper.toItemDto(item));
+                result.add(itemMapper.toItemDto(item));
             }
         }
 
@@ -131,7 +131,7 @@ public class ItemServiceImpl implements ItemService {
             if (Boolean.TRUE.equals(item.getAvailable()) &&
                     (item.getName().toLowerCase().contains(text.toLowerCase()) ||
                             item.getDescription().toLowerCase().contains(text.toLowerCase()))) {
-                result.add(ItemMapper.toItemDto(item));
+                result.add(itemMapper.toItemDto(item));
             }
         }
 

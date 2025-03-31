@@ -2,6 +2,8 @@ package ru.practicum.shareit.user;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -10,12 +12,16 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest
 class UserServiceImplTest {
     private UserServiceImpl userService;
 
+    @Autowired
+    private UserMapper userMapper;
+
     @BeforeEach
     void setUp() {
-        userService = new UserServiceImpl();
+        userService = new UserServiceImpl(userMapper);
     }
 
     @Test

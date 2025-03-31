@@ -1,5 +1,6 @@
 package ru.practicum.shareit.user;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.ConflictException;
@@ -11,9 +12,11 @@ import java.util.*;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final Map<Long, User> userStore = new HashMap<>();
     private Long idCounter = 1L;
+    private final UserMapper userMapper;
 
     @Override
     public UserDto createUser(UserDto userDto) {
@@ -26,12 +29,12 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        User user = UserMapper.toUser(userDto);
+        User user = userMapper.toUser(userDto);
         user.setId(idCounter++);
         userStore.put(user.getId(), user);
 
         log.info("Пользователь создан: {}", user);
-        return UserMapper.toUserDto(user);
+        return userMapper.toUserDto(user);
     }
 
     @Override
@@ -59,7 +62,7 @@ public class UserServiceImpl implements UserService {
         }
 
         log.info("Пользователь обновлен: {}", existing);
-        return UserMapper.toUserDto(existing);
+        return userMapper.toUserDto(existing);
     }
 
     @Override
@@ -73,14 +76,14 @@ public class UserServiceImpl implements UserService {
         }
 
         log.info("Пользователь найден: {}", user);
-        return UserMapper.toUserDto(user);
+        return userMapper.toUserDto(user);
     }
 
     @Override
     public List<UserDto> getAllUsers() {
         log.info("Запрос на получение всех пользователей");
         return userStore.values().stream()
-                .map(UserMapper::toUserDto)
+                .map(userMapper::toUserDto)
                 .toList();
     }
 

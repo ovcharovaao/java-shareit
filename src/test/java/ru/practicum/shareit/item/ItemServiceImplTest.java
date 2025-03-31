@@ -2,6 +2,8 @@ package ru.practicum.shareit.item;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -12,15 +14,21 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest
 class ItemServiceImplTest {
     private ItemServiceImpl itemService;
-    private UserServiceImpl userService;
     private UserDto userDto;
+
+    @Autowired
+    private UserMapper userMapper;
+
+    @Autowired
+    private ItemMapper itemMapper;
 
     @BeforeEach
     void setUp() {
-        userService = new UserServiceImpl();
-        itemService = new ItemServiceImpl(userService);
+        UserServiceImpl userService = new UserServiceImpl(userMapper);
+        itemService = new ItemServiceImpl(userService, itemMapper, userMapper);
 
         userDto = new UserDto(null, "User", "user@email.com");
         userDto = userService.createUser(userDto);
