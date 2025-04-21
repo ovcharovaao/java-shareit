@@ -1,11 +1,16 @@
 package ru.practicum.shareit.item;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemResponseDto;
+import ru.practicum.shareit.item.service.ItemService;
 
 import java.net.URI;
 import java.util.List;
@@ -18,26 +23,35 @@ public class ItemController {
 
     @PostMapping
     public ResponseEntity<ItemDto> createItem(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                              @RequestBody ItemDto itemDto) {
-        ItemDto created = itemService.createItem(userId, itemDto);
-        return ResponseEntity.created(URI.create("/items/" + created.getId())).body(created);
+                                              @Valid @RequestBody ItemDto itemDto) {
+        ItemDto createdItem = itemService.createItem(userId, itemDto);
+        URI location = URI.create("/items/" + createdItem.getId());
+        return ResponseEntity.created(location).body(createdItem);
+    }
+
+    @PatchMapping
+    public ResponseEntity<ItemDto> updateItemFromBody(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                                      @RequestBody ItemDto itemDto) {
+        if (itemDto.getId() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(itemService.updateItem(userId, itemDto.getId(), itemDto));
     }
 
     @PatchMapping("/{itemId}")
     public ResponseEntity<ItemDto> updateItem(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                              @PathVariable Long itemId,
-                                              @RequestBody ItemDto itemDto) {
+                                              @PathVariable Long itemId, @RequestBody ItemDto itemDto) {
         return ResponseEntity.ok(itemService.updateItem(userId, itemId, itemDto));
     }
 
     @GetMapping("/{itemId}")
-    public ResponseEntity<ItemDto> getItem(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                           @PathVariable Long itemId) {
+    public ResponseEntity<ItemResponseDto> getItem(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                                   @PathVariable Long itemId) {
         return ResponseEntity.ok(itemService.getItem(userId, itemId));
     }
 
     @GetMapping
-    public ResponseEntity<List<ItemDto>> getItemsByUser(@RequestHeader("X-Sharer-User-Id") Long userId) {
+    public ResponseEntity<List<ItemResponseDto>> getItemsByUser(@RequestHeader("X-Sharer-User-Id") Long userId) {
         return ResponseEntity.ok(itemService.getItemsByUser(userId));
     }
 
@@ -54,5 +68,13 @@ public class ItemController {
                                            @PathVariable Long itemId) {
         itemService.deleteItem(userId, itemId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public ResponseEntity<CommentDto> addComment(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                                 @PathVariable Long itemId,
+                                                 @RequestBody @Valid CommentDto commentDto) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(itemService.addComment(userId, itemId, commentDto));
     }
 }
