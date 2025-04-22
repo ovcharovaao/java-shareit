@@ -9,7 +9,6 @@ import ru.practicum.shareit.user.mapper.UserMapper;
 
 @Mapper(componentModel = "spring", uses = {UserMapper.class, ItemMapper.class})
 public interface BookingMapper {
-
     @Mapping(source = "booker", target = "booker")
     @Mapping(source = "item", target = "item")
     BookingDto toBookingDto(Booking booking);

@@ -1,4 +1,4 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.item.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -72,7 +72,6 @@ public class ItemController {
     public ResponseEntity<CommentDto> addComment(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                  @PathVariable Long itemId,
                                                  @RequestBody @Valid CommentDto commentDto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(itemService.addComment(userId, itemId, commentDto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(itemService.addComment(userId, itemId, commentDto));
     }
 }
