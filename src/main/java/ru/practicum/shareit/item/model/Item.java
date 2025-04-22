@@ -21,15 +21,15 @@ public class Item {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Название не может быть пустым")
+    @NotBlank(message = "Название вещи не может быть пустым")
     @Column(nullable = false)
     private String name;
 
-    @NotBlank(message = "Описание не может быть пустым")
+    @NotBlank(message = "Описание вещи не может быть пустым")
     @Column(nullable = false)
     private String description;
 
-    @NotNull(message = "Статус доступности обязателен")
+    @NotNull(message = "Доступность вещи должна быть указана")
     @Column(nullable = false)
     private Boolean available;
 
