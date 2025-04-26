@@ -15,6 +15,7 @@
     <name>ShareIt Gateway</name>
 
     <dependencies>
+        <!-- Все твои зависимости остаются без изменений -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -57,7 +58,24 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>ci</id>
+            <properties>
+                <skipSpringBootRun>true</skipSpringBootRun>
+            </properties>
+        </profile>
+    </profiles>
+
 </project>
