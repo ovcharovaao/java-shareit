@@ -26,7 +26,6 @@ class UserServiceImplTest {
     private UserRepository userRepository;
     @Mock
     private UserMapper userMapper;
-
     @InjectMocks
     private UserServiceImpl userService;
 
