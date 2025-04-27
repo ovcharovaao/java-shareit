@@ -6,6 +6,7 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ class UserDtoTest {
     }
 
     @Test
+    @DisplayName("Тест сериализации UserDto в JSON")
     void shouldSerializeUserDto() throws Exception {
         UserDto userDto = UserDto.builder()
                 .id(1L)
@@ -43,6 +45,7 @@ class UserDtoTest {
     }
 
     @Test
+    @DisplayName("Тест десериализации JSON в UserDto")
     void shouldDeserializeUserDto() throws Exception {
         String json = "{\"id\":1,\"name\":\"John Doe\",\"email\":\"john.doe@example.com\"}";
 
@@ -54,6 +57,7 @@ class UserDtoTest {
     }
 
     @Test
+    @DisplayName("Тест валидации с корректными данными")
     void shouldPassValidationWithValidData() {
         UserDto userDto = UserDto.builder()
                 .name("Jane Doe")
@@ -66,6 +70,7 @@ class UserDtoTest {
     }
 
     @Test
+    @DisplayName("Тест валидации с пустым именем")
     void shouldFailValidationWithBlankName() {
         UserDto userDto = UserDto.builder()
                 .name("")
@@ -79,6 +84,7 @@ class UserDtoTest {
     }
 
     @Test
+    @DisplayName("Тест валидации с пустым email")
     void shouldFailValidationWithBlankEmail() {
         UserDto userDto = UserDto.builder()
                 .name("Jane Doe")
@@ -92,6 +98,7 @@ class UserDtoTest {
     }
 
     @Test
+    @DisplayName("Тест валидации с некорректным email")
     void shouldFailValidationWithInvalidEmail() {
         UserDto userDto = UserDto.builder()
                 .name("Jane Doe")

@@ -1,6 +1,7 @@
 package ru.practicum.shareit.request.service;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -76,6 +77,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
+    @DisplayName("Добавление запроса с валидными данными возвращает ItemRequestDto")
     void addRequest_ValidData_ReturnsItemRequestDto() {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(requestRepository.save(any(ItemRequest.class))).thenReturn(request);
@@ -89,6 +91,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
+    @DisplayName("Попытка добавить запрос с несуществующим пользователем выбрасывает NotFoundException")
     void addRequest_UserNotFound_ThrowsNotFoundException() {
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
@@ -97,6 +100,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
+    @DisplayName("Получение своих запросов возвращает список ItemRequestDto")
     void getOwnRequests_ReturnsListOfItemRequestDtos() {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(requestRepository.findByRequestorIdOrderByCreatedDesc(userId)).thenReturn(List.of(request));
@@ -112,6 +116,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
+    @DisplayName("Попытка получения своих запросов с несуществующим пользователем выбрасывает NotFoundException")
     void getOwnRequests_UserNotFound_ThrowsNotFoundException() {
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
@@ -119,6 +124,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
+    @DisplayName("Получение чужих запросов возвращает список ItemRequestDto")
     void getOthersRequests_ReturnsListOfItemRequestDtos() {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(requestRepository.findAllExcludingUser(eq(userId), any()))
@@ -135,6 +141,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
+    @DisplayName("Попытка получения чужих запросов с несуществующим пользователем выбрасывает NotFoundException")
     void getOthersRequests_UserNotFound_ThrowsNotFoundException() {
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
@@ -142,6 +149,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
+    @DisplayName("Получение запроса по ID возвращает ItemRequestDto")
     void getRequestById_ReturnsItemRequestDto() {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(requestRepository.findById(request.getId())).thenReturn(Optional.of(request));
@@ -157,6 +165,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
+    @DisplayName("Попытка получения запроса по ID, если запрос не найден, выбрасывает NotFoundException")
     void getRequestById_RequestNotFound_ThrowsNotFoundException() {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(requestRepository.findById(request.getId())).thenReturn(Optional.empty());
@@ -165,6 +174,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
+    @DisplayName("Попытка получения запроса по ID с несуществующим пользователем выбрасывает NotFoundException")
     void getRequestById_UserNotFound_ThrowsNotFoundException() {
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
@@ -172,6 +182,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
+    @DisplayName("Добавление запроса с пустым описанием возвращает ItemRequestDto с null в описании")
     void addRequest_NullDescription_ReturnsItemRequestDto() {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(requestRepository.save(any(ItemRequest.class))).thenAnswer(invocation -> invocation.getArgument(0));

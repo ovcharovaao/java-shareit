@@ -10,7 +10,6 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface ItemRequestMapper {
-
     @Mapping(target = "requestorId", source = "request.requestor.id")
     @Mapping(target = "items", expression = "java(java.util.Collections.emptyList())")
     ItemRequestDto toDto(ItemRequest request);

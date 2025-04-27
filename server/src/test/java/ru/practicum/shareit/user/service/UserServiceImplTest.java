@@ -1,5 +1,6 @@
 package ru.practicum.shareit.user.service;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -47,6 +48,7 @@ class UserServiceImplTest {
     }
 
     @Test
+    @DisplayName("Создание пользователя должно вернуть сохранённого пользователя")
     void createUser_ShouldReturnSavedUser() {
         UserDto inputDto = createTestUserDto(null);
         User userToSave = createTestUser(null);
@@ -67,6 +69,7 @@ class UserServiceImplTest {
     }
 
     @Test
+    @DisplayName("Создание пользователя с уже существующим email должно вызвать ConflictException")
     void createUser_WithExistingEmail_ShouldThrowConflictException() {
         UserDto inputDto = createTestUserDto(null);
         when(userRepository.existsByEmailIgnoreCase(anyString())).thenReturn(true);
@@ -76,6 +79,7 @@ class UserServiceImplTest {
     }
 
     @Test
+    @DisplayName("Обновление пользователя должно обновить имя и email")
     void updateUser_ShouldUpdateNameAndEmail() {
         Long userId = 1L;
         User existingUser = createTestUser(userId);
@@ -96,6 +100,7 @@ class UserServiceImplTest {
     }
 
     @Test
+    @DisplayName("Обновление пользователя с уже существующим email должно вызвать ConflictException")
     void updateUser_WithExistingEmail_ShouldThrowConflictException() {
         Long userId = 1L;
         User existingUser = createTestUser(userId);
@@ -110,6 +115,7 @@ class UserServiceImplTest {
     }
 
     @Test
+    @DisplayName("Обновление пользователя с тем же email не должно проверять существование email")
     void updateUser_WithSameEmail_ShouldNotCheckExistence() {
         Long userId = 1L;
         User existingUser = createTestUser(userId);
@@ -127,6 +133,7 @@ class UserServiceImplTest {
     }
 
     @Test
+    @DisplayName("Получение пользователя по существующему ID должно вернуть пользователя")
     void getUser_ExistingId_ShouldReturnUser() {
         Long userId = 1L;
         User user = createTestUser(userId);
@@ -142,6 +149,7 @@ class UserServiceImplTest {
     }
 
     @Test
+    @DisplayName("Получение пользователя по несуществующему ID должно вызвать NotFoundException")
     void getUser_NonExistingId_ShouldThrowNotFoundException() {
         Long userId = 999L;
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
@@ -150,6 +158,7 @@ class UserServiceImplTest {
     }
 
     @Test
+    @DisplayName("Получение всех пользователей должно вернуть список пользователей")
     void getAllUsers_ShouldReturnListOfUsers() {
         User user1 = createTestUser(1L);
         User user2 = createTestUser(2L);
@@ -169,6 +178,7 @@ class UserServiceImplTest {
     }
 
     @Test
+    @DisplayName("Удаление пользователя по существующему ID должно удалить пользователя")
     void deleteUser_ExistingId_ShouldDeleteUser() {
         Long userId = 1L;
         when(userRepository.existsById(userId)).thenReturn(true);
@@ -179,6 +189,7 @@ class UserServiceImplTest {
     }
 
     @Test
+    @DisplayName("Удаление пользователя по несуществующему ID должно вызвать NotFoundException")
     void deleteUser_NonExistingId_ShouldThrowNotFoundException() {
         Long userId = 999L;
         when(userRepository.existsById(userId)).thenReturn(false);

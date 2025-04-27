@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.service;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -71,6 +72,7 @@ class ItemServiceImplTest {
     }
 
     @Test
+    @DisplayName("Создание вещи с валидными данными")
     void createItem_ValidData_ShouldReturnItemDto() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(owner));
         when(itemMapper.toItem(any(ItemDto.class))).thenReturn(item);
@@ -85,6 +87,7 @@ class ItemServiceImplTest {
     }
 
     @Test
+    @DisplayName("Создание вещи с невалидным пользователем должно выбросить исключение")
     void createItem_InvalidUser_ShouldThrowNotFoundException() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
@@ -92,6 +95,7 @@ class ItemServiceImplTest {
     }
 
     @Test
+    @DisplayName("Обновление вещи с валидными данными")
     void updateItem_ValidUpdate_ShouldReturnUpdatedItem() {
         ItemDto updateDto = new ItemDto();
         updateDto.setName("Updated Item");
@@ -123,6 +127,7 @@ class ItemServiceImplTest {
     }
 
     @Test
+    @DisplayName("Обновление вещи не владельцем должно выбросить исключение")
     void updateItem_NotByOwner_ShouldThrowNotFoundException() {
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
 
@@ -133,6 +138,7 @@ class ItemServiceImplTest {
     }
 
     @Test
+    @DisplayName("Поиск вещей с валидным запросом возвращает результаты")
     void searchItems_WithValidQuery_ShouldReturnResults() {
         when(itemRepository.search(anyString())).thenReturn(List.of(item));
         when(itemMapper.toItemDto(any(Item.class))).thenReturn(itemDto);
@@ -144,6 +150,7 @@ class ItemServiceImplTest {
     }
 
     @Test
+    @DisplayName("Поиск вещей с пустым запросом возвращает пустой список")
     void searchItems_WithEmptyQuery_ShouldReturnEmptyList() {
         List<ItemDto> result = itemService.searchItems("   ");
 
@@ -151,6 +158,7 @@ class ItemServiceImplTest {
     }
 
     @Test
+    @DisplayName("Удаление вещи владельцем происходит успешно")
     void deleteItem_ByOwner_ShouldDeleteSuccessfully() {
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
 
@@ -160,6 +168,7 @@ class ItemServiceImplTest {
     }
 
     @Test
+    @DisplayName("Добавление комментария без бронирования должно выбросить исключение")
     void addComment_WithoutBooking_ShouldThrowValidationException() {
         CommentDto request = new CommentDto();
         request.setText("Great item");
@@ -173,6 +182,7 @@ class ItemServiceImplTest {
     }
 
     @Test
+    @DisplayName("Добавление комментария с бронированием проходит успешно")
     void addComment_WithBooking_ShouldAddCommentSuccessfully() {
         CommentDto request = CommentDto.builder()
                 .text("Awesome item")

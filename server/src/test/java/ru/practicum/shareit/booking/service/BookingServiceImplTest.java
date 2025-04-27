@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking.service;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -65,6 +66,7 @@ class BookingServiceImplTest {
     );
 
     @Test
+    @DisplayName("Create booking with valid data returns BookingDto")
     void createBooking_ValidData_ReturnsBookingDto() {
         BookingRequestDto request = new BookingRequestDto(
                 1L,
@@ -85,6 +87,7 @@ class BookingServiceImplTest {
     }
 
     @Test
+    @DisplayName("Approve booking returns BookingDto with status 'APPROVED'")
     void updateBooking_ApproveBooking_ReturnsApprovedBooking() {
         Booking approvedBooking = new Booking(
                 1L,
@@ -115,6 +118,7 @@ class BookingServiceImplTest {
     }
 
     @Test
+    @DisplayName("Cannot create booking for own item throws ValidationException")
     void createBooking_BookingOwnItem_ThrowsValidationException() {
         Item userItem = new Item(2L, "userItem", "desc", true, user, null);
 
@@ -134,6 +138,7 @@ class BookingServiceImplTest {
     }
 
     @Test
+    @DisplayName("Cannot create booking if item not found throws NotFoundException")
     void createBooking_ItemNotFound_ThrowsException() {
         BookingRequestDto request = new BookingRequestDto(
                 1L,
@@ -147,6 +152,7 @@ class BookingServiceImplTest {
     }
 
     @Test
+    @DisplayName("End date before start date throws ValidationException")
     void createBooking_EndBeforeStart_ThrowsException() {
         BookingRequestDto request = new BookingRequestDto(
                 1L,
@@ -158,13 +164,15 @@ class BookingServiceImplTest {
     }
 
     @Test
+    @DisplayName("Update booking when not found throws NotFoundException")
     void updateBooking_BookingNotFound_ThrowsException() {
-        when(bookingRepository.findById(anyLong())).thenReturn(Optional.empty()); // Возвращаем пустой Optional
+        when(bookingRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> bookingService.updateBooking(2L, 1L, true));
     }
 
     @Test
+    @DisplayName("Update booking with invalid status throws ValidationException")
     void updateBooking_InvalidStatus_ThrowsException() {
         Booking invalidBooking = new Booking(
                 1L,
@@ -177,10 +185,11 @@ class BookingServiceImplTest {
 
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(invalidBooking));
 
-        assertThrows(ValidationException.class, () -> bookingService.updateBooking(2L, 1L, true));  // Ожидаем ValidationException
+        assertThrows(ValidationException.class, () -> bookingService.updateBooking(2L, 1L, true));
     }
 
     @Test
+    @DisplayName("Update booking by user who is not owner throws AccessDeniedException")
     void updateBooking_UserNotOwner_ThrowsAccessDeniedException() {
         User anotherUser = new User(3L, "Another", "another@mail.ru");
 
