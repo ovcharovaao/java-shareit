@@ -156,4 +156,21 @@ class ItemControllerTest {
                 .andExpect(jsonPath("$.id").value(commentDto.getId()))
                 .andExpect(jsonPath("$.text").value(commentDto.getText()));
     }
+
+    @Test
+    @DisplayName("Обновление вещи через PATCH без указания itemId в URL")
+    void updateItemFromBody_ShouldReturnUpdatedItem() throws Exception {
+        ItemDto itemDto = new ItemDto();
+        itemDto.setId(1L);
+        itemDto.setName("Updated Name");
+
+        Mockito.when(itemService.updateItem(anyLong(), anyLong(), any(ItemDto.class))).thenReturn(itemDto);
+
+        mockMvc.perform(patch("/items")
+                        .header("X-Sharer-User-Id", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(itemDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Updated Name"));
+    }
 }

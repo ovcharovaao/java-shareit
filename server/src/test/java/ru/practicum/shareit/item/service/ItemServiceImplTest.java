@@ -7,11 +7,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
@@ -214,5 +216,110 @@ class ItemServiceImplTest {
         assertEquals(1L, result.getId());
         assertEquals("Awesome item", result.getText());
         assertEquals("Owner", result.getAuthorName());
+    }
+
+    @Test
+    @DisplayName("Создание вещи с пустым названием должно выбросить исключение")
+    void createItem_EmptyName_ShouldThrowValidationException() {
+        ItemDto invalidDto = new ItemDto();
+        invalidDto.setName(" ");
+        invalidDto.setDescription("Valid");
+        invalidDto.setAvailable(true);
+
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(owner));
+
+        assertThrows(ValidationException.class, () -> itemService.createItem(1L, invalidDto));
+    }
+
+    @Test
+    @DisplayName("Обновление вещи не владельцем должно выбросить NotFoundException")
+    void updateItem_NotOwner_ShouldThrowNotFoundException() {
+        ItemDto updateDto = new ItemDto();
+        updateDto.setName("New Name");
+
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
+
+        assertThrows(NotFoundException.class, () -> itemService.updateItem(999L, 1L, updateDto));
+    }
+
+    @Test
+    @DisplayName("Получение вещи с некорректным ID пользователя должно выбросить ValidationException")
+    void getItem_InvalidUserId_ShouldThrowValidationException() {
+        assertThrows(ValidationException.class, () -> itemService.getItem(0L, 1L));
+    }
+
+    @Test
+    @DisplayName("Получение вещи с некорректным ID вещи должно выбросить ValidationException")
+    void getItem_InvalidItemId_ShouldThrowValidationException() {
+        assertThrows(ValidationException.class, () -> itemService.getItem(1L, 0L));
+    }
+
+    @Test
+    @DisplayName("Удаление вещи не владельцем должно выбросить NotFoundException")
+    void deleteItem_NotOwner_ShouldThrowNotFoundException() {
+        User anotherUser = new User();
+        anotherUser.setId(2L);
+        anotherUser.setName("Another");
+        anotherUser.setEmail("another@email.com");
+
+        Item itemFromDb = new Item();
+        itemFromDb.setId(1L);
+        itemFromDb.setOwner(anotherUser);
+
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(itemFromDb));
+
+        assertThrows(NotFoundException.class, () -> itemService.deleteItem(1L, 1L));
+    }
+
+    @Test
+    @DisplayName("Создание комментария с пустым текстом должно выбросить ValidationException")
+    void addComment_EmptyText_ShouldThrowValidationException() {
+        CommentDto request = new CommentDto();
+        request.setText("   ");
+
+        assertThrows(ValidationException.class, () -> itemService.addComment(1L, 1L, request));
+    }
+
+    @Test
+    @DisplayName("Создание вещи без указания доступности должно выбросить ValidationException")
+    void createItem_NullAvailable_ShouldThrowValidationException() {
+        ItemDto invalidDto = new ItemDto();
+        invalidDto.setName("Valid Name");
+        invalidDto.setDescription("Valid Description");
+        invalidDto.setAvailable(null);
+
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(owner));
+
+        assertThrows(ValidationException.class, () -> itemService.createItem(1L, invalidDto));
+    }
+
+    @Test
+    @DisplayName("Создание вещи с пустым описанием должно выбросить ValidationException")
+    void createItem_EmptyDescription_ShouldThrowValidationException() {
+        ItemDto invalidDto = new ItemDto();
+        invalidDto.setName("Valid Name");
+        invalidDto.setDescription(" ");
+        invalidDto.setAvailable(true);
+
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(owner));
+
+        assertThrows(ValidationException.class, () -> itemService.createItem(1L, invalidDto));
+    }
+
+    @Test
+    @DisplayName("Получение всех вещей пользователя возвращает список вещей")
+    void getItemsByUser_ShouldReturnListOfItems() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(owner));
+        when(itemRepository.findByOwner_Id(anyLong(), any(Sort.class))).thenReturn(List.of(item));
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
+        when(commentRepository.findByItem_Id(anyLong(), any(Sort.class))).thenReturn(List.of());
+        when(bookingRepository.findPastOwnerBookings(anyLong(), anyLong(), any())).thenReturn(List.of());
+        when(bookingRepository.findFutureOwnerBookings(anyLong(), anyLong(), any())).thenReturn(List.of());
+
+        List<ItemResponseDto> result = itemService.getItemsByUser(1L);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(item.getId(), result.get(0).getId());
     }
 }
