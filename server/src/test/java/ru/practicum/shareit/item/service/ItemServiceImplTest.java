@@ -23,6 +23,7 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -321,5 +322,73 @@ class ItemServiceImplTest {
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(item.getId(), result.get(0).getId());
+    }
+
+    @Test
+    void deleteItem_ShouldDeleteItem() {
+        when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
+        doNothing().when(itemRepository).delete(any(Item.class));
+
+        itemService.deleteItem(1L, 1L);
+
+        verify(itemRepository, times(1)).delete(any(Item.class));
+    }
+
+    @Test
+    void deleteItem_ShouldThrowNotFoundException_WhenItemNotFound() {
+        when(itemRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> itemService.deleteItem(1L, 1L));
+    }
+
+    @Test
+    void searchItems_ShouldReturnItemDtos() {
+        when(itemRepository.search(anyString()))
+                .thenReturn(List.of(item));
+        when(itemMapper.toItemDto(any(Item.class)))
+                .thenReturn(itemDto);
+
+        List<ItemDto> result = itemService.searchItems("Item");
+
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void searchItems_ShouldReturnEmptyList_WhenTextIsEmpty() {
+        List<ItemDto> result = itemService.searchItems("");
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void getItem_ShouldThrowNotFoundException_WhenItemNotFound() {
+        when(itemRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> itemService.getItem(1L, 1L));
+    }
+
+    @Test
+    void createItem_ShouldThrowNotFoundException_WhenUserNotFound() {
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> itemService.createItem(1L, itemDto));
+    }
+
+    @Test
+    void updateItem_ShouldReturnUpdatedItemDto() {
+        when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
+        when(itemMapper.toItemDto(any(Item.class))).thenReturn(itemDto);
+        when(itemRepository.save(any(Item.class))).thenReturn(item);
+
+        ItemDto result = itemService.updateItem(1L, 1L, itemDto);
+
+        assertEquals(itemDto, result);
+    }
+
+    @Test
+    void updateItem_ShouldThrowNotFoundException_WhenItemNotFound() {
+        when(itemRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> itemService.updateItem(1L, 1L, itemDto));
     }
 }

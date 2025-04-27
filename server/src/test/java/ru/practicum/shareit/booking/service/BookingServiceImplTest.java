@@ -344,4 +344,115 @@ class BookingServiceImplTest {
 
         assertEquals("Неизвестный статус бронирования: INVALID_STATE", exception.getMessage());
     }
+
+    @Test
+    @DisplayName("Создание бронирования с датами в будущем возвращает BookingDto")
+    void createBooking_FutureDates_ReturnsBookingDto() {
+        BookingRequestDto request = new BookingRequestDto(
+                1L,
+                LocalDateTime.now().plusDays(2),
+                LocalDateTime.now().plusDays(3)
+        );
+
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+        when(bookingRepository.save(any())).thenReturn(booking);
+        when(mapper.toBookingDto(any(Booking.class))).thenReturn(bookingDto);
+
+        BookingDto result = bookingService.createBooking(1L, request);
+
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
+        verify(bookingRepository).save(any(Booking.class));
+    }
+
+    @Test
+    @DisplayName("Создание бронирования с датой окончания раньше текущего времени выбрасывает ValidationException")
+    void createBooking_EndBeforeNow_ThrowsValidationException() {
+        BookingRequestDto request = new BookingRequestDto(
+                1L,
+                LocalDateTime.now().minusHours(1),
+                LocalDateTime.now().minusMinutes(30)
+        );
+
+        ValidationException exception = assertThrows(ValidationException.class,
+                () -> bookingService.createBooking(1L, request));
+
+        assertEquals("Дата начала не может быть в прошлом", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Создание бронирования с некорректной датой начала выбрасывает ValidationException")
+    void createBooking_InvalidStartDate_ThrowsValidationException() {
+        BookingRequestDto request = new BookingRequestDto(
+                1L,
+                LocalDateTime.now().minusDays(1),
+                LocalDateTime.now().plusDays(1)
+        );
+
+        ValidationException exception = assertThrows(ValidationException.class,
+                () -> bookingService.createBooking(1L, request));
+
+        assertEquals("Дата начала не может быть в прошлом", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Получение списка бронирований владельца с статусом 'CURRENT' возвращает только актуальные бронирования")
+    void getOwnerBookings_CurrentState_ReturnsOnlyCurrentBookings() {
+        when(userRepository.findById(owner.getId())).thenReturn(Optional.of(owner));
+        when(bookingRepository.findByItemOwnerIdAndStartBeforeAndEndAfter(
+                eq(owner.getId()), any(LocalDateTime.class), any(LocalDateTime.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+        when(mapper.toBookingDto(any())).thenReturn(bookingDto);
+
+        List<BookingDto> result = bookingService.getOwnerBookings(owner.getId(), "CURRENT");
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(bookingRepository, times(1))
+                .findByItemOwnerIdAndStartBeforeAndEndAfter(eq(owner.getId()), any(), any(), any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("Обновление бронирования с неправильным ID бронирования выбрасывает NotFoundException")
+    void updateBooking_InvalidBookingId_ThrowsNotFoundException() {
+        when(bookingRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> bookingService.updateBooking(2L, 999L, true));
+    }
+
+    @Test
+    @DisplayName("Обновление бронирования с некорректным статусом (например, CANCELLED) выбрасывает ValidationException")
+    void updateBooking_CancelledStatus_ThrowsValidationException() {
+        Booking cancelledBooking = new Booking(
+                1L,
+                booking.getStart(),
+                booking.getEnd(),
+                item,
+                user,
+                BookingStatus.CANCELED
+        );
+
+        when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(cancelledBooking));
+
+        assertThrows(ValidationException.class, () -> bookingService.updateBooking(2L, 1L, true));
+    }
+
+    @Test
+    @DisplayName("Создание бронирования с датой начала в прошлом выбрасывает ValidationException")
+    void createBooking_StartInPast_ThrowsValidationException() {
+        BookingRequestDto request = new BookingRequestDto(1L, LocalDateTime.now().minusDays(1), LocalDateTime.now().plusDays(1));
+
+        ValidationException exception = assertThrows(ValidationException.class, () -> bookingService.createBooking(1L, request));
+        assertEquals("Дата начала не может быть в прошлом", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Создание бронирования с датой окончания раньше даты начала выбрасывает ValidationException")
+    void createBooking_EndBeforeStart_ThrowsValidationException() {
+        BookingRequestDto request = new BookingRequestDto(1L, LocalDateTime.now().plusHours(1), LocalDateTime.now().plusMinutes(30));
+
+        ValidationException exception = assertThrows(ValidationException.class, () -> bookingService.createBooking(1L, request));
+        assertEquals("Дата окончания должна быть позже даты начала", exception.getMessage());
+    }
 }

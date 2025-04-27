@@ -17,8 +17,7 @@ import ru.practicum.shareit.booking.service.BookingService;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -100,6 +99,25 @@ class BookingControllerTest {
 
         mockMvc.perform(get("/bookings/owner")
                         .header("X-Sharer-User-Id", 1L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1L));
+    }
+
+    @Test
+    @DisplayName("Получение списка бронирований пользователя должно возвращать список BookingDto")
+    void findByUserId_shouldReturnListOfBookings() throws Exception {
+        BookingDto bookingDto = BookingDto.builder()
+                .id(1L)
+                .build();
+
+        Mockito.when(bookingService.getUserBookings(anyLong(), any(), anyInt(), anyInt()))
+                .thenReturn(List.of(bookingDto));
+
+        mockMvc.perform(get("/bookings")
+                        .header("X-Sharer-User-Id", 1L)
+                        .param("state", "ALL")
+                        .param("from", "0")
+                        .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1L));
     }
